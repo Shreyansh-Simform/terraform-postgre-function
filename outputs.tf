@@ -99,64 +99,26 @@ output "password_retrieval_commands" {
 output "user_management_instructions" {
   description = "Complete instructions for managing PostgreSQL users with direct Terraform approach"
   value = <<-EOT
-PostgreSQL User Management with Direct Terraform Apply:
+PostgreSQL User Management - Direct Terraform Apply
 
-CURRENT CONFIGURATION:
-- PostgreSQL Server: ${azurerm_postgresql_flexible_server.my-server.fqdn}
-- Database: ${azurerm_postgresql_flexible_server_database.my-postgre-db.name}
-- Key Vault: ${azurerm_key_vault.user_passwords.name}
-- Authentication: RBAC (no access policies)
-- Management Method: Direct psql commands
+CONFIG: ${azurerm_postgresql_flexible_server.my-server.fqdn} | ${azurerm_key_vault.user_passwords.name} | RBAC Auth
 
-AUTOMATICALLY CREATED USERS:
-${join("\n", [for username, config in local.postgresql_users : "   - ${username}: ${config.privileges} privileges (${config.description})"])}
+USERS: ${join(", ", [for username, config in local.postgresql_users : "${username}(${config.privileges})"])}
 
-DEPLOYMENT COMMAND:
-   terraform apply -var-file="terraform.tfvars" -var-file="secret.tfvars"
-   
-   This command will:
-   - Deploy PostgreSQL Flexible Server with public access
-   - Create Key Vault with RBAC authorization
-   - Generate secure passwords for all users
-   - Store passwords in Key Vault
-   - Create PostgreSQL users directly via psql
-   - Handle individual user failures gracefully
+DEPLOY: terraform apply -var-file="terraform.tfvars" -var-file="secret.tfvars"
 
-ADDING NEW USERS:
-1. Edit users.tf and add new user to postgresql_users local block:
-   "new_user" = {
-     privileges = "readwrite"  # readonly, readwrite, or full
-     description = "Description of user purpose"
-   }
-2. Run: terraform apply -var-file="terraform.tfvars" -var-file="secret.tfvars"
-3. New user will be created automatically with secure password
+ADD USER: 
+1. Edit users.tf: "new_user" = { privileges = "readwrite", description = "..." }
+2. Run: terraform apply
 
-PASSWORD RETRIEVAL:
-Get specific user password:
-   az keyvault secret show --vault-name ${azurerm_key_vault.user_passwords.name} --name pg-user-USERNAME-password --query 'value' -o tsv
+GET PASSWORD: az keyvault secret show --vault-name ${azurerm_key_vault.user_passwords.name} --name pg-user-USERNAME-password --query 'value' -o tsv
 
-List all PostgreSQL user passwords:
-   az keyvault secret list --vault-name ${azurerm_key_vault.user_passwords.name} --query '[?contains(name, `pg-user`)].{Name:name, Username:tags.Username, Privileges:tags.Privileges}' -o table
+CONNECT: Host=${azurerm_postgresql_flexible_server.my-server.fqdn} DB=${azurerm_postgresql_flexible_server_database.my-postgre-db.name} Port=5432 SSL=require
 
-DIRECT DATABASE CONNECTION:
-Host: ${azurerm_postgresql_flexible_server.my-server.fqdn}
-Port: 5432
-Database: ${azurerm_postgresql_flexible_server_database.my-postgre-db.name}
-SSL Mode: require
-
-FEATURES:
-- Incremental user creation (new users added, existing preserved)
-- Individual failure handling (one user failure doesn't stop others)
-- RBAC security model for Key Vault access
-- Automatic IP firewall management for Terraform client
-- Secure password generation and storage
-
-PREREQUISITES:
-- PostgreSQL client (psql) installed on Terraform execution environment
-- Azure CLI authenticated with appropriate permissions
-- Network access to PostgreSQL server (automatically configured)
+FEATURES: Incremental creation, failure handling, RBAC security, auto passwords
   EOT
 }
+
 
 # Connection Information for Applications
 output "connection_info" {

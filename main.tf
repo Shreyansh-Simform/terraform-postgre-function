@@ -6,6 +6,7 @@ locals {
 
     rg_name = "${var.business_unit}-${var.environment}-${var.resource_group_name}"
 }
+
 #Resource Group Block to contain the resources.
 resource "azurerm_resource_group" "myrg" {
   name     = local.rg_name
@@ -107,7 +108,6 @@ resource "time_sleep" "wait_for_rbac_propagation" {
   depends_on = [
     azurerm_role_assignment.terraform_kv_secrets_officer
   ]
-  
   triggers = {
     role_assignment_id = azurerm_role_assignment.terraform_kv_secrets_officer.id
   }
