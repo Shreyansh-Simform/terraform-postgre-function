@@ -12,12 +12,8 @@ locals {
       privileges = "full"
       description = "Vikram Patel user addition"
     }
-    "nandini_vyas" = {
-      privileges = "full"
-      description = "Nandini Vyas user addition"
-    }
     "bhavin_zala" = {
-      privileges = "readonly"
+      privileges = "full"
       description = "Bhavin Zala user addition"
     }
   }
